@@ -1,0 +1,355 @@
+---
+title: "52414 - lab 1"
+author: "52414"
+date: "4/4/2020"
+output: html_document
+---
+# *Lab 1: Basic Data Wrangling*  
+The only allowed libraries are the following (**please do not add your own**):
+```{r, include=FALSE}
+#rm(list = ls(all.names = TRUE))
+library(tidyverse)
+library(data.table)
+```  
+  
+### Q1
+### Data Preparation and Manipulation   
+(25 points)  
+
+**Solution:**
+```{r}
+#open filles
+conf.cases.nar <- read.csv(url("https://data.humdata.org/hxlproxy/data/download/time_series_covid19_confirmed_global_narrow.csv?dest=data_edit&filter01=explode&explode-header-att01=date&explode-value-att01=value&filter02=rename&rename-oldtag02=%23affected%2Bdate&rename-newtag02=%23date&rename-header02=Date&filter03=rename&rename-oldtag03=%23affected%2Bvalue&rename-newtag03=%23affected%2Binfected%2Bvalue%2Bnum&rename-header03=Value&filter04=clean&clean-date-tags04=%23date&filter05=sort&sort-tags05=%23date&sort-reverse05=on&filter06=sort&sort-tags06=%23country%2Bname%2C%23adm1%2Bname&tagger-match-all=on&tagger-default-tag=%23affected%2Blabel&tagger-01-header=province%2Fstate&tagger-01-tag=%23adm1%2Bname&tagger-02-header=country%2Fregion&tagger-02-tag=%23country%2Bname&tagger-03-header=lat&tagger-03-tag=%23geo%2Blat&tagger-04-header=long&tagger-04-tag=%23geo%2Blon&header-row=1&url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_confirmed_global.csv"), comment.char="#",  stringsAsFactors = FALSE)
+
+death.cases.nar <- read.csv(url("https://data.humdata.org/hxlproxy/data/download/time_series_covid19_deaths_global_narrow.csv?dest=data_edit&filter01=merge&merge-url01=https%3A%2F%2Fdocs.google.com%2Fspreadsheets%2Fd%2Fe%2F2PACX-1vTglKQRXpkKSErDiWG6ycqEth32MY0reMuVGhaslImLjfuLU0EUgyyu2e-3vKDArjqGX7dXEBV8FJ4f%2Fpub%3Fgid%3D1326629740%26single%3Dtrue%26output%3Dcsv&merge-keys01=%23country%2Bname&merge-tags01=%23country%2Bcode%2C%23region%2Bmain%2Bcode%2C%23region%2Bsub%2Bcode%2C%23region%2Bintermediate%2Bcode&filter02=merge&merge-url02=https%3A%2F%2Fdocs.google.com%2Fspreadsheets%2Fd%2Fe%2F2PACX-1vTglKQRXpkKSErDiWG6ycqEth32MY0reMuVGhaslImLjfuLU0EUgyyu2e-3vKDArjqGX7dXEBV8FJ4f%2Fpub%3Fgid%3D398158223%26single%3Dtrue%26output%3Dcsv&merge-keys02=%23adm1%2Bname&merge-tags02=%23country%2Bcode%2C%23region%2Bmain%2Bcode%2C%23region%2Bsub%2Bcode%2C%23region%2Bintermediate%2Bcode&merge-replace02=on&merge-overwrite02=on&filter03=explode&explode-header-att03=date&explode-value-att03=value&filter04=rename&rename-oldtag04=%23affected%2Bdate&rename-newtag04=%23date&rename-header04=Date&filter05=rename&rename-oldtag05=%23affected%2Bvalue&rename-newtag05=%23affected%2Binfected%2Bvalue%2Bnum&rename-header05=Value&filter06=clean&clean-date-tags06=%23date&filter07=sort&sort-tags07=%23date&sort-reverse07=on&filter08=sort&sort-tags08=%23country%2Bname%2C%23adm1%2Bname&tagger-match-all=on&tagger-default-tag=%23affected%2Blabel&tagger-01-header=province%2Fstate&tagger-01-tag=%23adm1%2Bname&tagger-02-header=country%2Fregion&tagger-02-tag=%23country%2Bname&tagger-03-header=lat&tagger-03-tag=%23geo%2Blat&tagger-04-header=long&tagger-04-tag=%23geo%2Blon&header-row=1&url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_deaths_global.csv"), comment.char="#",  stringsAsFactors = FALSE)
+
+recovered.cases.nar <- read.csv(url("https://data.humdata.org/hxlproxy/data/download/time_series_covid19_recovered_global_narrow.csv?dest=data_edit&filter01=merge&merge-url01=https%3A%2F%2Fdocs.google.com%2Fspreadsheets%2Fd%2Fe%2F2PACX-1vTglKQRXpkKSErDiWG6ycqEth32MY0reMuVGhaslImLjfuLU0EUgyyu2e-3vKDArjqGX7dXEBV8FJ4f%2Fpub%3Fgid%3D1326629740%26single%3Dtrue%26output%3Dcsv&merge-keys01=%23country%2Bname&merge-tags01=%23country%2Bcode%2C%23region%2Bmain%2Bcode%2C%23region%2Bsub%2Bcode%2C%23region%2Bintermediate%2Bcode&filter02=merge&merge-url02=https%3A%2F%2Fdocs.google.com%2Fspreadsheets%2Fd%2Fe%2F2PACX-1vTglKQRXpkKSErDiWG6ycqEth32MY0reMuVGhaslImLjfuLU0EUgyyu2e-3vKDArjqGX7dXEBV8FJ4f%2Fpub%3Fgid%3D398158223%26single%3Dtrue%26output%3Dcsv&merge-keys02=%23adm1%2Bname&merge-tags02=%23country%2Bcode%2C%23region%2Bmain%2Bcode%2C%23region%2Bsub%2Bcode%2C%23region%2Bintermediate%2Bcode&merge-replace02=on&merge-overwrite02=on&filter03=explode&explode-header-att03=date&explode-value-att03=value&filter04=rename&rename-oldtag04=%23affected%2Bdate&rename-newtag04=%23date&rename-header04=Date&filter05=rename&rename-oldtag05=%23affected%2Bvalue&rename-newtag05=%23affected%2Binfected%2Bvalue%2Bnum&rename-header05=Value&filter06=clean&clean-date-tags06=%23date&filter07=sort&sort-tags07=%23date&sort-reverse07=on&filter08=sort&sort-tags08=%23country%2Bname%2C%23adm1%2Bname&tagger-match-all=on&tagger-default-tag=%23affected%2Blabel&tagger-01-header=province%2Fstate&tagger-01-tag=%23adm1%2Bname&tagger-02-header=country%2Fregion&tagger-02-tag=%23country%2Bname&tagger-03-header=lat&tagger-03-tag=%23geo%2Blat&tagger-04-header=long&tagger-04-tag=%23geo%2Blon&header-row=1&url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_recovered_global.csv"),comment.char="#",  stringsAsFactors = FALSE)
+
+# for each file  create new data that aggregate value as function of country and date
+cases.agg <- aggregate(Value ~ Country.Region + Date, data = conf.cases.nar, FUN = sum)
+cases.agg <- cases.agg[order(cases.agg$Country.Region,cases.agg$Date),]
+cases.agg$Date = as.Date((cases.agg$Date))
+
+
+deaths.agg <- aggregate(Value ~ Country.Region + Date, data = death.cases.nar, FUN = sum)
+deaths.agg <- deaths.agg[order(deaths.agg$Country.Region,deaths.agg$Date),]
+deaths.agg$Date = as.Date((deaths.agg$Date))
+
+recovered.agg <- aggregate(Value ~ Country.Region + Date, data = recovered.cases.nar, FUN = sum)
+recovered.agg <- recovered.agg[order(recovered.agg$Country.Region,recovered.agg$Date),]
+recovered.agg$Date = as.Date((recovered.agg$Date))
+```
+C:
+```{r}
+# aggregate by tidyverse
+cases.agg.new <- conf.cases.nar %>% group_by(Country.Region, Date) %>% 
+    summarise(Value = sum(Value)) %>% arrange(Country.Region)
+cases.agg.new$Date = as.Date((cases.agg.new$Date))
+
+deaths.agg.new <- death.cases.nar %>% group_by(Country.Region, Date) %>% 
+    summarise(Value = sum(Value)) %>% arrange(Country.Region)
+deaths.agg.new$Date = as.Date((deaths.agg.new$Date))
+
+recovered.agg.new <- recovered.cases.nar %>% group_by(Country.Region, Date) %>% summarise(Value = sum(Value)) %>% arrange(Country.Region)
+recovered.agg.new$Date = as.Date((recovered.agg.new$Date))
+
+all.equal(recovered.agg$Date,recovered.agg.new$Date) 
+all.equal(recovered.agg$Country.Region,recovered.agg.new$Country.Region)  
+all.equal(recovered.agg$Value,recovered.agg.new$Value)  
+
+
+```
+D:
+```{r}
+#merge the data frames and filter by 31/03/2020 
+cases_and_deaths <- full_join(cases.agg.new,deaths.agg.new, "Date")
+cases_and_deaths <- cases_and_deaths[which(cases_and_deaths$Date == "2020-03-31"), ]
+cases_and_deaths <- filter(cases_and_deaths,Country.Region.x == Country.Region.y )
+cases_and_deaths <- slice(cases_and_deaths) %>% select(Country.Region.x, Date, Value.x, Value.y)
+cases_and_deaths_recoverd <- full_join(cases_and_deaths,recovered.agg.new,"Date")
+cases_and_deaths_recoverd <- filter(cases_and_deaths_recoverd,Country.Region.x == Country.Region)
+cases_and_deaths_recoverd <- slice(cases_and_deaths_recoverd) %>% select(Country.Region.x, Value.x, Value.y, Value)
+
+#change the columns names
+names(cases_and_deaths_recoverd)[2] <- "cases"
+names(cases_and_deaths_recoverd)[3] <- "deaths"
+names(cases_and_deaths_recoverd)[4] <- "recovered"
+
+#calculate the number of sicks and order the data frame
+cases_and_deaths_recoverd_sick <- mutate(cases_and_deaths_recoverd, sick = cases - deaths - recovered)
+march_end <- cases_and_deaths_recoverd_sick[order(cases_and_deaths_recoverd_sick$cases, decreasing = TRUE), ]
+
+#take the 10 cuntries with most cases
+march_top_10 <- head(march_end[, !names(march_end) == "Cases"], 10)
+march_top_10 <- slice(march_top_10) %>% select(deaths, recovered, sick)
+
+# change the data frame to matrix for building the bar plot
+matrix_value <- data.matrix(march_top_10, rownames.force = NA) # replace table to matrix
+matrix_value <- t(matrix_value)
+matrix_value <- matrix_value[-1,]
+
+#build the bar plot which shows in total that cases= sick+ recovored + death
+colors = c("green","orange","brown")
+countries <- c('US', 'Italy', 'Spain', 'China', 'Germany','France','Iran', 'United Kingdom', 'Switzerland', 'Turkey')
+regions <- c("deaths", "recoverd","sick")
+barplot(matrix_value, main = "Top ten countries by number of cases at end of March", names.arg = countries, xlab = "countries", ylab = "number of people", col = colors, ylim = c(0,110000),las = 2,cex.names = 0.7)
+legend("topright", regions, cex = 0.8, fill = colors)
+
+```
+
+
+
+the issue with the bar plot is that there is a data that we can not see because of the big diffrencces between countries or diffrencces between sick, recovered and deaths. for example, in Turkey its almost impossible to see the deaths ane recovered.
+
+
+### Q2
+### Analysis of Daily New Corona Cases and Deaths  
+20 points
+
+**Solution:** 
+A:
+```{r}
+#create new column that show how many new cases/deaths each country incurs each day
+deaths.agg.new <- deaths.agg %>% group_by(Country.Region) %>% mutate(diff = Value - lag(Value, default = Value[1]))
+cases.agg.new <- cases.agg %>% group_by(Country.Region) %>% mutate(diff = Value - lag(Value, default = Value[1]))
+
+```
+B:
+```{r}
+#print in descriptive format the top 10 deaths and cases
+top_deaths <- head(arrange(deaths.agg.new, desc(diff)),10)
+print(top_deaths)
+top_cases <- head(arrange(cases.agg.new, desc(diff)),10)
+print(top_cases)
+```
+c:
+```{r}
+#create new data frame od Italy deaths and cases
+deaths_italy <- filter(deaths.agg,Country.Region == "Italy")
+cases_italy <- filter(cases.agg,Country.Region == "Italy")
+italy <- full_join(deaths_italy,cases_italy,"Date")
+italy <- slice(italy) %>% select( Date, Value.x, Value.y)
+names(italy)[2] <- "deaths"
+names(italy)[3] <- "cases"
+
+plot(x= italy$Date, y= italy$cases,type='l', col = "black", xlab= "date", ylab= "new cases and deaths", main= "cases and deaths in italy by date")
+lines(x= italy$Date , y= italy$deaths, col= "green")
+legend("topleft", legend = c("cases","deaths"), fill = c("black", "green"))
+# create a plot that shows cases and deaths in italy by date
+
+
+```
+D:
+```{r}
+italy$cases <-log(italy$cases)
+italy <- italy %>% mutate_if(is.numeric, function(x) ifelse(is.infinite(x), 0, x))
+# create a plot that shows  log cases and deaths in italy by date
+plot(x= italy$Date, y= italy$cases ,type='l', col = "black", xlab= "date", ylab= "log cases and deaths",main= "log cases and deaths in italy by date",  ylim = c(0,100))
+lines(x= italy$Date , y= italy$deaths, col= "green")
+legend("topleft", legend = c("log cases","deaths"), fill = c("black", "green"))
+
+```
+
+
+
+in this graph we show the same grafh as in 2c but we did log only for the cases value. now we can see that the scale is out of proportion and we cant figure a good data from this graph.
+
+
+### Q3
+### Preparing and Analyzing the World Bank Data   
+25 points
+
+**Solution:** 
+
+```{r}
+eco_data <- read.csv(url("https://raw.githubusercontent.com/DataScienceHU/DataAnalysisR_2020/master/data/economic_data.csv"), stringsAsFactors = FALSE)
+# rename columns as required
+names(eco_data)[1] <- "country"
+names(eco_data)[2] <- "S_country"
+names(eco_data)[3] <- "feature"
+names(eco_data)[4] <- "feature_code"
+names(eco_data)[5] <- "Y2018V"
+names(eco_data)[6] <- "Y2019V"
+```
+B, c:
+```{r}
+# new data frame that shows countries and the features with their respective values in eco-data
+eco <- eco_data %>% select(country,feature,Y2018V)
+eco <- eco[-c(2641,2642,2643),]
+
+eco <- spread(eco, feature, Y2018V, fill = NA, convert = FALSE, drop = TRUE,
+  sep = NULL ) 
+eco <- slice(eco) %>% select(1,3,4,5,6,7,8,9,10,11,12)
+head_eco<- head(eco)
+print(head_eco)
+
+# rename columns as required
+names(eco)[1] <- "country"
+names(eco)[3] <- "GDP"
+names(eco)[6] <- "pop65"
+names(eco)[7] <- "pop_city_ratio"
+names(eco)[8] <- "pop_total"
+```
+D:
+```{r}
+eco$GDP <- as.numeric(as.character(eco$GDP))
+eco$pop_total <- as.numeric(as.character(eco$pop_total))
+# create new column - GDP per capita named GDP_POP
+eco <- eco %>% mutate(GDP_POP = GDP / pop_total)
+eco[is.na(eco)] <- 0
+# 5 COUNTRIES WITH THE HIGHEST GDP PER CAPITA IN 2018
+top_GDP <- head(arrange(eco, desc(GDP_POP)),5)
+print(top_GDP)
+
+# slice the 10% countries with the lowest GDP per capita
+top90_GDP <- eco %>% filter(GDP_POP > quantile(eco$GDP_POP, 0.10)) 
+top90_GDP$pop65 <- as.numeric(as.character(top90_GDP$pop65))
+top90_GDP$GDP_POP <- as.numeric(as.character(top90_GDP$GDP_POP))
+top90_GDP[is.na(top90_GDP)] <- 0
+
+#plot the % of population over 65 vs. log of GDP per capita in 2018
+plot(x = log(top90_GDP$GDP_POP), y= top90_GDP$pop65, xlab = "GDP per capita", ylab = "percent of population over 65", main= "Percent of Population Over 65 vs. Logarithm of GDP Per Capita in 2018")
+abline(lm(top90_GDP$pop65~log(top90_GDP$GDP_POP),top90_GDP))
+
+```
+
+
+
+we can learn from the plot and the regression line in it that there is a positive correlation between the % of population over 65 vs. log of GDP per capita in 2018, which means that the older the population the GDP per capita is higher
+
+
+### Q4
+### Joining the Datasets   
+20 points
+
+A:
+**Solution:**   
+```{r}
+#join the data frames
+corona <- full_join(full_join(recovered.agg,deaths.agg,by =c("Date","Country.Region"), copy = FALSE),cases.agg, by =c("Date","Country.Region"), copy = FALSE)
+names(corona)[3] <- "recovered1"
+names(corona)[4] <- "deaths1"
+names(corona)[5] <- "cases1"
+
+```
+B:
+```{r}
+names(corona)[1] <- "country"
+# matching names of countries in the 2 data frames
+eco$country[eco$country == "Myanmar"] <- "Burma"
+eco$country[eco$country == "Gambia, The"] <- "Gambia"
+eco$country[eco$country == "Syrian Arab Republic"] <- "Syria"
+eco$country[eco$country == "Congo, Dem. Rep."] <- "Congo (Kinshasa)"
+eco$country[eco$country == "St. Kitts and Nevis"] <- "Saint Kitts and Nevis"
+eco$country[eco$country == "Iran, Islamic Rep. "] <- "Iran"
+eco$country[eco$country == "Brunei Darussalam"] <- "Brunei"
+eco$country[eco$country == "Sub-Saharan Africa"] <- "Western Sahara"
+eco$country[eco$country == "St. Vincent and the Grenadines"] <- "Saint Vincent and the Grenadines "
+eco$country[eco$country == "Kyrgyz Republic"] <- "Kyrgyzstan"
+eco$country[eco$country == "Bahamas, The"] <- "Bahamas"
+eco$country[eco$country=="Congo, Rep."]<-"Congo (Brazzaville)"
+eco$country[eco$country=="Czech Republic"]<-"Czechia"
+eco$country[eco$country=="Egypt, Arab Rep."]<-"Egypt"
+eco$country[eco$country=="Korea, Rep."]<-"Korea, South"
+eco$country[eco$country=="Lao PDR"]<-"Laos"
+eco$country[eco$country=="Russian Federation"]<-"Russia"
+eco$country[eco$country=="St. Lucia"]<-"Saint Lucia"
+eco$country[eco$country=="Slovak Republic"]<-"Slovakia"
+eco$country[eco$country=="Venezuela, RB"]<-"Venezuela"
+eco$country[eco$country=="Yemen, Rep."]<-"Yemen"
+eco$country[eco$country == "United States"] <- "US"
+# merge the eco and corona data frames
+corona_eco <-merge(eco,corona)
+corona_eco[is.na(corona_eco)] <- 0
+```
+c:
+```{r}
+
+corona_eco$pop_total <- as.numeric(as.character(corona_eco$pop_total))
+corona_eco$cases1 <- as.numeric(as.character(corona_eco$cases1))
+corona_eco$deaths1 <- as.numeric(as.character(corona_eco$deaths1))
+corona_eco$recovered1 <- as.numeric(as.character(corona_eco$recovered1))
+
+#Creating new columns of cases,deaths, and recovered per 100,000 people for each country.
+corona_eco <- corona_eco %>% mutate(cases = 100000 * cases1 / pop_total )
+corona_eco <- corona_eco %>% mutate(deaths = 100000 * deaths1 / pop_total )
+corona_eco <- corona_eco %>% mutate(recovered = 100000 * recovered1 / pop_total )
+corona_eco <- corona_eco %>% mutate_if(is.numeric, function(x) ifelse(is.infinite(x), 0, x))
+
+#Using the last day of March as a reference
+
+corona_eco <- corona_eco[which(corona_eco$Date == "2020-03-31"), ]
+corona_eco <- filter(corona_eco,country == country )
+
+#slicing to show only normalized data
+corona_eco_plot <- slice(corona_eco) %>% select(country, cases, deaths, recovered)
+
+#showing the top 10 countries
+corona_eco_plot <- corona_eco_plot[order(corona_eco_plot$cases, decreasing = TRUE), ]
+corona_eco_top_10 <- head(corona_eco_plot[, !names(corona_eco_plot) == "Cases"], 10)
+
+corona_eco_top_10 <- slice(corona_eco_top_10) %>% select(deaths, recovered, cases)
+value_matrix <- data.matrix(corona_eco_top_10, rownames.force = NA)
+value_matrix <- t(corona_eco_top_10)
+
+#barplot for the top 10 countries
+colors = c("green","orange","brown")
+country <- c('San Marino','Andorra','Luxembourg','Iceland', 'Spain', 'Switzerland', 'Liechtenstein', 'Italy', 'Monaco', 'Austria')
+regions <- c("deaths", "recoverd","cases")
+barplot(value_matrix, main = "Top ten countries by normalized cases", names.arg = country, xlab = "countries", ylab = "number of people", col = colors, ylim = c(0,550),las = 2,cex.names = 0.7)
+legend("topright", regions, cex = 0.9, fill = colors)
+
+```
+
+
+
+as we can see the top 10 countries are different between the 2 plots. it may be more meaningful to look at this plot since it reflects the spredness of the virus in each country regardless of the size of the population.
+
+
+D:
+```{r}
+corona_eco$pop65 <- as.numeric(as.character(corona_eco$pop65))
+rownames(corona_eco)<- corona_eco$country
+
+plot_normal_VS_pop65 <- plot(x = corona_eco$deaths,y= corona_eco$pop65 ,xlab= "Normalized Cases And Deaths Per 100K",ylab = "Pop65 over 15 percent",col = (ifelse(corona_eco$deaths > 15 ,"red","orange")) ,xlim=c(0,40),ylim = c(15,30),main = "Normalize Cases And Death Vs Pop65") #build the plot
+points(corona_eco$cases,corona_eco$pop65,col=ifelse(corona_eco$pop65 > 24 ,"red","blue"))
+text(pop65~ deaths,labels = ifelse(corona_eco$deaths > 15 | corona_eco$pop65>24,rownames(corona_eco),NA),data=corona_eco, cex=0.8, font=0.6) #adding labels
+
+
+```
+
+
+### Q5
+### Open Question
+10 points
+  
+Write an interesting research question regarding the Corona outbreak and then follow the steps to answer it using tables and plots. You can use the loaded datasets or any other dataset you find as long as you add the data file to your `lab1` repository so it can be loaded directly from a `url` (e.g. the World Bank). This question will be graded based on creativity, originality, and the novelty of the analysis.   
+  
+**Solution:** 
+
+```{r}
+mainland_data <- read.csv(url("https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fopendata.ecdc.europa.eu%2Fcovid19%2Fcasedistribution%2Fcsv&filename=ecdc_covid19_cases.csv"))
+
+cases.conti <- mainland_data %>% group_by(continentExp, month) %>% 
+    summarise(cases = sum(cases)) %>% arrange(month)
+cases.conti  <-cases.conti[-c(which(cases.conti$continentExp == "Other")), ]
+cases.conti <- cases.conti[-c(which(cases.conti$month == "12")), ]
+
+case_matrix<- cbind(cases.conti$continentExp, cases.conti$cases)
+rownames(case_matrix) <- cases.conti$month
+
+bp <-barplot(t(case_matrix),beside = TRUE, c(0,2000),las = 2,cex.names = 1,las = 1, col=c("blue","red", "yellow", "green", "black"),xlab = "months",ylab = "cases", main = "Corona cases spread by continents vs months")
+legend("topleft", legend = c("Asia","Africa","Europe","America","Oceania"), fill = c("blue","red", "yellow", "green", "black"))
+```
+
+
+
+We would like to see if there is a significant difference in the outbreak of the Corona epidemic between the different continents.
+
+It can be seen that according to the graph we have created showing the number of cases on each continent every month that although the epidemic started in Asia, the increase in the number of cases there is quite moderate.
+in particular,the increase in continents which most of there countries are first world countries is greatest (America,Europe).
+we also can see that the Corona epidemic is not spreaded at Oceania and Africa as much as in the other continents, but in Africa we can see that there is a growing trend in the number of cases mostly in this month (April) and we can assumme by this graph that the number will increase much more in the future (based on spread in other continents).
+
+According to this graph, it is not possible to understand why the change in spread exists.
+there is factors like Asia past experience in dealing with epidemics, number of tests, weather conditions, average age on each continent or transparency towards the public.
+we believe, an answer that accurately describes the difference may be obtained after the epidemic is over and it should be explored by all different factors, but in the meantime we learn that there is a significant difference between continents in both the number of cases and the growth rate.
